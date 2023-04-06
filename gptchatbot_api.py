@@ -42,7 +42,18 @@ def s3_read_file(bucket, key):
             raise e
 
 class GPTCHATBOT():
-    def __init__(self, request='virtual_assistant', product = 'contextual_similarity', bucket='sharethis-daas'):
+    def __init__(self, request='virtual_assistant', product = 'contextual_similarity', bucket='data-science-research'):
+        """
+        Initialize GPTCHATBOT class with request, product, and bucket parameters.
+
+        Args:
+            request (str): Name of the request. Default is 'virtual_assistant'.
+            product (str): Name of the product. Default is 'contextual_similarity'.
+            bucket (str): Name of the S3 bucket to read initial prompts and store files.
+
+        Returns:
+            None
+        """
         openai.api_key = os.environ["GPT_SECRET"]
         self.request = request
         self.product = product
@@ -59,6 +70,15 @@ class GPTCHATBOT():
         self.prompt_cnt_threshold = 20
 
     def _callChatGPT(self, prompt):
+        """
+        Call the OpenAI GPT API in chat mode to generate a chat response.
+
+        Args:
+            prompt (list): Initial prompts and entire chat history.
+
+        Returns:
+            str: Generated response from the OpenAI GPT API.
+        """
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=prompt
@@ -66,6 +86,15 @@ class GPTCHATBOT():
         return response.choices[0].message["content"]
 
     def _callGPTComplete(self, prompt):
+        """
+        Call the OpenAI GPT API to generate a one-time response with single request.
+
+        Args:
+            prompt (str): User input prompt.
+
+        Returns:
+            str: Generated response from the OpenAI GPT API.
+        """
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages= [{"role": "user",
@@ -75,6 +104,15 @@ class GPTCHATBOT():
         return response.choices[0].message["content"]
 
     def chatbotResponse(self, user_input):
+        """
+        Generate a chat response to user input.
+
+        Args:
+            user_input (str): User input prompt.
+
+        Returns:
+            str: Generated response from the OpenAI GPT API.
+        """
         # input update
         self._updateChatbotState("user", user_input)
 
@@ -85,7 +123,19 @@ class GPTCHATBOT():
         # response update
         self._updateChatbotState("assistant", response)
 
+        return response
+
     def _updateChatbotState(self, role, content):
+        """
+        Update the chatbot state with the new chat prompt.
+
+        Args:
+            role (str): Role of the content ('user' or 'assistant').
+            content (str): Content to update the state with.
+
+        Returns:
+            None
+        """
         self.chatbot_state["prompts"].append({
             "role": role,
             "content": content
@@ -99,6 +149,12 @@ class GPTCHATBOT():
             self._summarizeCurrentPrompt()
 
     def _loadInitPrompts(self):
+        """
+        Load the initial prompts from S3.
+
+        Returns:
+            list: List of initial prompts.
+        """
         init_prompts = []
         ## load instruction prompts
         instruction_files = {
@@ -128,6 +184,15 @@ class GPTCHATBOT():
         return init_prompts
 
     def _processInitPrompts(self, init_prompt_content):
+        """
+        Add the initial prompt contents into system prompts in OPENAI GPT API chat mode format
+
+        Args:
+            init_prompt_content (list): List of initial prompt content.
+
+        Returns:
+            list: List of initial prompts in system role.
+        """
         init_prompts = []
         for i in range(len(init_prompt_content)):
             init_prompts.append(
@@ -138,6 +203,12 @@ class GPTCHATBOT():
         return init_prompts
 
     def _summarizeCurrentPrompt(self):
+        """
+        Summarize the current prompt, save current chat history, and update the chatbot state with summarized historical prompt.
+
+        Returns:
+           None
+        """
         self._saveChatHistory()
 
         response = self._callGPTComplete(
@@ -161,6 +232,12 @@ class GPTCHATBOT():
         self.chatbot_state["prompt_cnt"] = 0
 
     def _chatbotWorkflowLogic(self):
+        """
+        Define the workflow logic for the chatbot under different product mode.
+
+        Returns:
+            None
+        """
         ## contextual similarity ##
         if self.product == "contextual_similarity":
             ## seed_url
@@ -178,6 +255,12 @@ class GPTCHATBOT():
             print(f"Product workflow {self.product} has not been implemented...")
 
     def _stageTransit(self):
+        """
+        Transition the chatbot to the next stage.
+
+        Returns:
+            None
+        """
         self._saveChatHistory()
 
         ## reset chatbot
@@ -188,12 +271,24 @@ class GPTCHATBOT():
         self._chatbotWorkflowLogic()
 
     def _saveChatHistory(self):
+        """
+        Save current chat history to s3 bucket.
+
+        Returns:
+            None
+        """
         chat_history = json.dumps(self.chatbot_state["prompts"])
         current_time = datetime.datetime.now()
         timestamp = current_time.strftime('%Y-%m-%d-%H:%M:%S')
         s3_upload(self.bucket, chat_history, self.request, self.chatbot_state["stage"] + timestamp)
 
     def updateChatbotStage(self, stage):
+        """
+        Update chatbot into next stage
+
+        Returns:
+            None
+        """
         self.chatbot_state["stage"] = stage
         try:
             self._stageTransit()
