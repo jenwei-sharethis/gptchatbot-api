@@ -17,12 +17,12 @@ This API setup a chatbot backed by ChatGPT 3.5 model. With proper initial prompt
 You can find a set of example prompt files under `example_prompt` folder.
 
 ## Get chatbot response
-Use `chatbotResponse(user_input)` to obtain response from virtual assistant ChatGPT.\n
+Use `chatbotResponse(user_input)` to obtain response from virtual assistant ChatGPT./n
 `user_input`: str
 returns: str
 
 ## Move chatbot to next subtask stage
-Use `updateChatbotStage(stage)` to notify chatbot move to another subtask stage.\n
+Use `updateChatbotStage(stage)` to notify chatbot move to another subtask stage./n
 `stage`: str
 
 For example, the system has detected that a user has uploaded the input file, the UI has changed and been waiting for keyword confirmation. 
