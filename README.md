@@ -1,7 +1,7 @@
 # gptchatbot-api
 This API setup a chatbot backed by ChatGPT 3.5 model. With proper initial prompts, this API can trigger assistant mode of ChatGPT with spec and domain knowledge explained in prompt files. 
 
-## Initialize gptchatbot object
+## Initialize GPTCHATBOT object
 `request`: Specify the mode of gptchatbot. Default is "virtual_assistant". Currently this API only have one mode.
 `product`: Specify which product to let ChatGPT assistant read relevant prompt files.
 `bucket`: Specify the bucket where the initial prompt files are stored on s3.
