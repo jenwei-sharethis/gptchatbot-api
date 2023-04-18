@@ -20,6 +20,7 @@ You can find a set of example prompt files under `example_prompt` folder.
 Use `chatbotResponse(user_input)` to obtain response from virtual assistant ChatGPT.
 
 `user_input`: str
+
 returns: str
 
 ## Move chatbot to next subtask stage
